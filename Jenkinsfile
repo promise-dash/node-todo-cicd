@@ -1,34 +1,40 @@
-pipeline{
-    agent { label 'dev-server' }
-    
-    stages{
-        stage("Code Clone"){
+@Library("Shared") _
+pipeline {
+    agent {label "vinod"}
+
+    stages {
+        stage('Hello'){
             steps{
-                echo "Code Clone Stage"
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
-            }
-        }
-        stage("Code Build & Test"){
-            steps{
-                echo "Code Build Stage"
-                sh "docker build -t node-app ."
-            }
-        }
-        stage("Push To DockerHub"){
-            steps{
-                withCredentials([usernamePassword(
-                    credentialsId:"dockerHubCreds",
-                    usernameVariable:"dockerHubUser", 
-                    passwordVariable:"dockerHubPass")]){
-                sh 'echo $dockerHubPass | docker login -u $dockerHubUser --password-stdin'
-                sh "docker image tag node-app:latest ${env.dockerHubUser}/node-app:latest"
-                sh "docker push ${env.dockerHubUser}/node-app:latest"
+                script{
+                    hello()
                 }
             }
         }
-        stage("Deploy"){
-            steps{
-                sh "docker compose down && docker compose up -d --build"
+        stage('Code Checkout') {
+            steps {
+                script{
+                    code_checkout("https://github.com/promise-dash/node-todo-cicd.git", "master")
+                }
+            }
+        }
+        stage('Docker build') {
+            steps {
+                script{
+                    docker_build("todo-app", "latest", "promise779")
+                }
+            }
+        }
+        stage('Push to Dockerhub') {
+            steps {
+                script{
+                    docker_push("todo-app", "latest")
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying the code'
+                sh "docker compose up -d"
             }
         }
     }
