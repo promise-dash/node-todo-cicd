@@ -3,13 +3,6 @@ pipeline {
     agent {label "vinod"}
 
     stages {
-        stage('Hello'){
-            steps{
-                script{
-                    hello()
-                }
-            }
-        }
         stage('Code Checkout') {
             steps {
                 script{
@@ -34,7 +27,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying the code'
-                sh "docker compose up -d"
+                sh "docker compose down && docker compose up -d"
             }
         }
     }
